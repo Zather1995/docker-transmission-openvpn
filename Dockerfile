@@ -30,7 +30,9 @@ RUN apt-get update \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && groupmod -g 1000 users \
     && useradd -u 911 -U -d /config -s /bin/false abc \
-    && usermod -G users abc
+    && usermod -G users abc \
+    && wget http://sourceforge.mirrorservice.org/f/project/fi/filebot/filebot/FileBot_4.7.9/filebot_4.7.9_amd64.deb \
+    && dpkg -i filebot_4.7.9_amd64.deb
 
 ADD openvpn/ /etc/openvpn/
 ADD transmission/ /etc/transmission/
@@ -52,7 +54,7 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_BLOCKLIST_URL=http://www.example.com/blocklist \
     TRANSMISSION_CACHE_SIZE_MB=4 \
     TRANSMISSION_DHT_ENABLED=true \
-    TRANSMISSION_DOWNLOAD_DIR=/data/completed \
+    TRANSMISSION_DOWNLOAD_DIR=/data/torrents/completed \
     TRANSMISSION_DOWNLOAD_LIMIT=100 \
     TRANSMISSION_DOWNLOAD_LIMIT_ENABLED=0 \
     TRANSMISSION_DOWNLOAD_QUEUE_ENABLED=true \
@@ -60,7 +62,7 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_ENCRYPTION=1 \
     TRANSMISSION_IDLE_SEEDING_LIMIT=30 \
     TRANSMISSION_IDLE_SEEDING_LIMIT_ENABLED=false \
-    TRANSMISSION_INCOMPLETE_DIR=/data/incomplete \
+    TRANSMISSION_INCOMPLETE_DIR=/data/torrents/incomplete \
     TRANSMISSION_INCOMPLETE_DIR_ENABLED=true \
     TRANSMISSION_LPD_ENABLED=false \
     TRANSMISSION_MAX_PEERS_GLOBAL=200 \
@@ -95,8 +97,8 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_RPC_WHITELIST=127.0.0.1 \
     TRANSMISSION_RPC_WHITELIST_ENABLED=false \
     TRANSMISSION_SCRAPE_PAUSED_TORRENTS_ENABLED=true \
-    TRANSMISSION_SCRIPT_TORRENT_DONE_ENABLED=false \
-    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME= \
+    TRANSMISSION_SCRIPT_TORRENT_DONE_ENABLED=true \
+    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME=/data/torrents/transmission-home/sort \
     TRANSMISSION_SEED_QUEUE_ENABLED=false \
     TRANSMISSION_SEED_QUEUE_SIZE=10 \
     TRANSMISSION_SPEED_LIMIT_DOWN=100 \
@@ -110,9 +112,9 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_UPLOAD_LIMIT_ENABLED=0 \
     TRANSMISSION_UPLOAD_SLOTS_PER_TORRENT=14 \
     TRANSMISSION_UTP_ENABLED=true \
-    TRANSMISSION_WATCH_DIR=/data/watch \
+    TRANSMISSION_WATCH_DIR=/data/torrents/watch \
     TRANSMISSION_WATCH_DIR_ENABLED=true \
-    TRANSMISSION_HOME=/data/transmission-home \
+    TRANSMISSION_HOME=/data/torrents/transmission-home \
     ENABLE_UFW=false \
     UFW_ALLOW_GW_NET=false \
     UFW_EXTRA_PORTS= \
