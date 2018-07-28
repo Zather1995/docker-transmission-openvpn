@@ -32,7 +32,8 @@ RUN apt-get update \
     && useradd -u 911 -U -d /config -s /bin/false abc \
     && usermod -G users abc \
     && wget http://sourceforge.mirrorservice.org/f/project/fi/filebot/filebot/FileBot_4.7.9/filebot_4.7.9_amd64.deb \
-    && dpkg -i filebot_4.7.9_amd64.deb
+    && dpkg -i filebot_4.7.9_amd64.deb \
+    && rm filebot_4.7.9_amd64.deb
 
 ADD openvpn/ /etc/openvpn/
 ADD transmission/ /etc/transmission/
