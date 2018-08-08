@@ -8,6 +8,7 @@ sleep 1
 
 filebot -script fn:amc \
 	--output "/data/videos/" \
+	--db anidb
 	--def animeFormat="Anime/{n}/{n}.S{(episode.season ? s : 1).pad(2)}E{e.pad(2)}.{t}" \
 	--def movieFormat="Movies/{n} ({y})/{n} ({y})" \
 	--log-file amc.log \
