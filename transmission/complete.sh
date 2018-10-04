@@ -1,10 +1,13 @@
 #!/bin/bash
 
 export HOME=/config
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
 
 sleep 1
 
 filebot -script fn:amc \
+	--def ut_label=tv \
 	--db thetvdb \
 	--output "/data/videos/" \
 	--def movieFormat="Movies/{n} ({y})/{n} ({y})" \

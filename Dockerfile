@@ -7,7 +7,7 @@ VOLUME /config
 # Update packages and install software
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install software-properties-common wget git default-jre libmediainfo-dev \
+    && apt-get -y install software-properties-common wget git default-jre libmediainfo-dev locales \
     && add-apt-repository ppa:transmissionbt/ppa \
     && wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add - \
     && echo "deb http://build.openvpn.net/debian/openvpn/stable xenial main" > /etc/apt/sources.list.d/openvpn-aptrepo.list \
@@ -34,6 +34,11 @@ RUN apt-get update \
     && wget http://sourceforge.mirrorservice.org/f/project/fi/filebot/filebot/FileBot_4.7.9/filebot_4.7.9_amd64.deb \
     && dpkg -i filebot_4.7.9_amd64.deb \
     && rm filebot_4.7.9_amd64.deb
+
+RUN locale-gen en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
 
 ADD openvpn/ /etc/openvpn/
 ADD transmission/ /etc/transmission/
@@ -99,7 +104,7 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_RPC_WHITELIST_ENABLED=false \
     TRANSMISSION_SCRAPE_PAUSED_TORRENTS_ENABLED=true \
     TRANSMISSION_SCRIPT_TORRENT_DONE_ENABLED=true \
-    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME=/etc/transmission/complete.sh \
+    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME=/data/torrents/transmission-home/complete.sh \
     TRANSMISSION_SEED_QUEUE_ENABLED=false \
     TRANSMISSION_SEED_QUEUE_SIZE=10 \
     TRANSMISSION_SPEED_LIMIT_DOWN=100 \
