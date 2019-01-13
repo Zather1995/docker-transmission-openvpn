@@ -7,7 +7,7 @@ VOLUME /config
 # Update packages and install software
 RUN apt-get update \
     && apt-get -y install transmission-cli transmission-common transmission-daemon \
-    && apt-get install -y dumb-init unzip openvpn curl ufw git tinyproxy \
+    && apt-get install -y dumb-init unzip openvpn curl ufw git tinyproxy jq \
     && curl -L -o /tmp/release.zip https://github.com/Secretmapper/combustion/archive/release.zip \
     && unzip /tmp/release.zip -d /opt/transmission-ui/ \
     && rm /tmp/release.zip \
@@ -15,6 +15,10 @@ RUN apt-get update \
     && mkdir /opt/transmission-ui/transmission-web-control \
     && curl -L https://github.com/ronggang/twc-release/raw/master/src.tar.gz \
      | tar -C /opt/transmission-ui/transmission-web-control/ -xzv \
+    && ln -s /usr/share/transmission/web/style /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/images /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/javascript /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/index.html /opt/transmission-ui/transmission-web-control/index.original.html \
     && apt-get purge git unzip \
     && apt-get autoremove --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
@@ -32,6 +36,7 @@ ADD tinyproxy /opt/tinyproxy/
 ENV OPENVPN_USERNAME=**None** \
     OPENVPN_PASSWORD=**None** \
     OPENVPN_PROVIDER=**None** \
+    GLOBAL_APPLY_PERMISSIONS=true \
     TRANSMISSION_ALT_SPEED_DOWN=50 \
     TRANSMISSION_ALT_SPEED_ENABLED=false \
     TRANSMISSION_ALT_SPEED_TIME_BEGIN=540 \
@@ -106,9 +111,11 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_WATCH_DIR=/data/watch \
     TRANSMISSION_WATCH_DIR_ENABLED=true \
     TRANSMISSION_HOME=/data/transmission-home \
+    TRANSMISSION_WATCH_DIR_FORCE_GENERIC=false \
     ENABLE_UFW=false \
     UFW_ALLOW_GW_NET=false \
     UFW_EXTRA_PORTS= \
+    UFW_DISABLE_IPTABLES_REJECT=false \
     TRANSMISSION_WEB_UI=\
     PUID=\
     PGID=\

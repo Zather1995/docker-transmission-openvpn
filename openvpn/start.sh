@@ -13,6 +13,15 @@ fi
 
 echo "Using OpenVPN provider: ${OPENVPN_PROVIDER}"
 
+if [[ "$OPENVPN_PROVIDER" = "NORDVPN" ]]
+then
+    if [[ -z "$OPENVPN_CONFIG" ]]
+    then
+        export OPENVPN_CONFIG=$(curl -s 'https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations' | jq -r '.[0].hostname').udp
+        echo "Setting best server ${OPENVPN_CONFIG}"
+    fi
+fi
+
 if [[ -n "${OPENVPN_CONFIG-}" ]]; then
   readarray -t OPENVPN_CONFIG_ARRAY <<< "${OPENVPN_CONFIG//,/$'\n'}"
   ## Trim leading and trailing spaces from all entries. Inefficient as all heck, but works like a champ.
@@ -92,6 +101,14 @@ function ufwAllowPortLong {
 }
 
 if [[ "${ENABLE_UFW,,}" == "true" ]]; then
+  if [[ "${UFW_DISABLE_IPTABLES_REJECT,,}" == "true" ]]; then
+    # A horrible hack to ufw to prevent it detecting the ability to limit and REJECT traffic
+    sed -i 's/return caps/return []/g' /usr/lib/python3/dist-packages/ufw/util.py
+    # force a rewrite on the enable below
+    echo "Disable and blank firewall"
+    ufw disable
+    echo "" > /etc/ufw/user.rules
+  fi
   # Enable firewall
   echo "enabling firewall"
   sed -i -e s/IPV6=yes/IPV6=no/ /etc/default/ufw
