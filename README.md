@@ -13,23 +13,31 @@ You need to specify your provider and credentials with environment variables,
 as well as mounting volumes where the data should be stored.
 An example run command to get you going is provided below.
 
-Also worth mentioning.
-If you want to route web traffic through the same tunnel that Transmission is using there
-is a pre-installed Tinyproxy which will expose a proxy on port 8888 when enabled.
-And if you're using PIA as provider it will update Transmission hourly with assigned open port.
+It also bundles an installation of Tinyproxy to also be able to proxy web traffic over your VPN,
+as well as scripts for opening a port for Transmission if you are using PIA or Perfect Privacy providers.
 
-GL HF! And if you run into problems, please check the README twice and maybe try the gitter chat before opening an issue :)
+GL HF! And if you run into problems, please check the README twice and try the gitter chat before opening an issue :)
 
-### about:maintenance
+## Please help out (about:maintenance)
 
-This image was created for my own use, but sharing is caring so it had to be open source.
-The number of users, issues and pull-requests have gone up quite drastically since that
-and that's great! It's been a lot of fun watching the activity level go up
-and my pet project improve with it.
+This image was created for my own use, but sharing is caring, so it had to be open source.
+It has now gotten quite popular, and that's great! But keeping it up to date, providing support, fixes
+and new features takes a lot of time.
 
-But maintaining it takes time, and if you ever feel like donating, here's a button:
+I'm therefore kindly asking you to donate if you feel like you're getting a good tool
+and you're able to spare some dollars to keep it functioning as it should. There's a couple of ways to do it:
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73XHRSK65KQYC)
+Become a patron, supporting the project with a small monthly amount.
+
+[![Donate with Patreon](images/patreon.png)](https://www.patreon.com/haugene)
+
+Make a one time donation through PayPal.
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73XHRSK65KQYC)
+
+Or use this referral code to DigitalOcean and get 25$ in credits, if you're interested in a cloud setup.
+
+[![Credits on DigitalOcean](images/digitalocean.png)](https://m.do.co/c/ca994f1552bc)
 
 You can also help out by submitting pull-requests or helping others with
 open issues or in the gitter chat. A big thanks to everyone who has contributed so far!
@@ -45,7 +53,7 @@ $ docker run --cap-add=NET_ADMIN --device=/dev/net/tun -d \
               -v /your/storage/path/:/data \
               -v /etc/localtime:/etc/localtime:ro \
               -e OPENVPN_PROVIDER=PIA \
-              -e OPENVPN_CONFIG=Netherlands \
+              -e OPENVPN_CONFIG=CA\ Toronto \
               -e OPENVPN_USERNAME=user \
               -e OPENVPN_PASSWORD=pass \
               -e WEBPROXY_ENABLED=false \
@@ -90,6 +98,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | BTGuard | `BTGUARD` |
 | Cryptostorm | `CRYPTOSTORM` |
 | Cypherpunk | `CYPHERPUNK` |
+| FreeVPN | `FREEVPN` |
 | FrootVPN | `FROOT` |
 | FrostVPN | `FROSTVPN` |
 | Giganews | `GIGANEWS` |
@@ -98,6 +107,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | IntegrityVPN | `INTEGRITYVPN` |
 | IPredator | `IPREDATOR` |
 | IPVanish | `IPVANISH` |
+| IronSocket | `IRONSOCKET` |
 | Ivacy | `IVACY` |
 | IVPN | `IVPN` |
 | Mullvad | `MULLVAD` |
@@ -108,6 +118,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | Private Internet Access | `PIA` |
 | PrivateVPN | `PRIVATEVPN` |
 | proXPN | `PROXPN` |
+| proxy.sh | `PROXYSH ` |
 | PureVPN | `PUREVPN` |
 | RA4W VPN | `RA4W` |
 | SaferVPN | `SAFERVPN` |
@@ -116,6 +127,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | SmartVPN | `SMARTVPN` |
 | TigerVPN | `TIGER` |
 | TorGuard | `TORGUARD` |
+| Trust.Zone | `TRUSTZONE` |
 | TunnelBear | `TUNNELBEAR`|
 | UsenetServerVPN | `USENETSERVER` |
 | Windscribe | `WINDSCRIBE` |
@@ -123,6 +135,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | VPN.AC | `VPNAC` |
 | VPN.ht | `VPNHT` |
 | VPNBook.com | `VPNBOOK` |
+| VPNFacile | `VPNFACILE` |
 | VPNTunnel | `VPNTUNNEL` |
 | VyprVpn | `VYPRVPN` |
 
@@ -149,7 +162,15 @@ If TRANSMISSION_PEER_PORT_RANDOM_ON_START is enabled then it allows traffic to t
 |----------|----------|-------|
 |`ENABLE_UFW` | Enables the firewall | `ENABLE_UFW=true`|
 |`UFW_ALLOW_GW_NET` | Allows the gateway network through the firewall. Off defaults to only allowing the gateway. | `UFW_ALLOW_GW_NET=true`|
-|`UFW_EXTRA_PORTS` | Allows the comma separated list of ports through the firewall. Respsects UFW_ALLOW_GW_NET. | `UFW_EXTRA_PORTS=9910,23561,443`|
+|`UFW_EXTRA_PORTS` | Allows the comma separated list of ports through the firewall. Respects UFW_ALLOW_GW_NET. | `UFW_EXTRA_PORTS=9910,23561,443`|
+|`UFW_DISABLE_IPTABLES_REJECT` | Prevents the use of `REJECT` in the `iptables` rules, for hosts without the `ipt_REJECT` module (such as the Synology NAS). | `UFW_DISABLE_IPTABLES_REJECT=true`|
+
+### Permission configuration options
+By default the startup script applies a default set of permissions and ownership on the transmission download, watch and incomplete directories. The GLOBAL_APPLY_PERMISSIONS directive can be used to disable this functionality.
+
+| Variable | Function | Example |
+|----------|----------|-------|
+|`GLOBAL_APPLY_PERMISSIONS` | Disable setting of default permissions | `GLOBAL_APPLY_PERMISSIONS=false`|
 
 ### Alternative web UIs
 You can override the default web UI by setting the ```TRANSMISSION_WEB_HOME``` environment variable. If set, Transmission will look there for the Web Interface files, such as the javascript, html, and graphics files.
@@ -163,7 +184,7 @@ You can override the default web UI by setting the ```TRANSMISSION_WEB_HOME``` e
 
 ### Transmission configuration options
 
-You may override transmission options by setting the appropriate environment variable.
+You may override Transmission options by setting the appropriate environment variable.
 
 The environment variables are the same name as used in the transmission settings.json file
 and follow the format given in these examples:
@@ -177,6 +198,8 @@ and follow the format given in these examples:
 
 As you can see the variables are prefixed with `TRANSMISSION_`, the variable is capitalized, and `-` is converted to `_`.
 
+Transmission options changed in the WebUI or in settings.json will be overridden at startup and will not survive after a reboot of the container. You may want to use these variables in order to keep your preferences.
+
 PS: `TRANSMISSION_BIND_ADDRESS_IPV4` will be overridden to the IP assigned to your OpenVPN tunnel interface.
 This is to prevent leaking the host IP.
 
@@ -184,8 +207,9 @@ This is to prevent leaking the host IP.
 
 This container also contains a web-proxy server to allow you to tunnel your web-browser traffic through the same OpenVPN tunnel.
 This is useful if you are using a private tracker that needs to see you login from the same IP address you are torrenting from.
-The default listening port is 8888. Note that only ports above 1024 can be specified as all ports below 1024 are privileged 
+The default listening port is 8888. Note that only ports above 1024 can be specified as all ports below 1024 are privileged
 and would otherwise require root permissions to run.
+Remember to add a port binding for your selected (or default) port when starting the container.
 
 | Variable | Function | Example |
 |----------|----------|-------|
@@ -205,7 +229,7 @@ You may set the following parameters to customize the user id that runs transmis
 ### Dropping default route from iptables (advanced)
 
 Some VPNs do not override the default route, but rather set other routes with a lower metric.  
-This might lead to te default route (your untunneled connection) to be used.
+This might lead to the default route (your untunneled connection) to be used.
 
 To drop the default route set the environment variable `DROP_DEFAULT_ROUTE` to `true`.
 
@@ -289,20 +313,25 @@ For example use googles dns servers by adding --dns 8.8.8.8 --dns 8.8.4.4 as par
 #### Restart container if connection is lost
 If the VPN connection fails or the container for any other reason loses connectivity, you want it to recover from it. One way of doing this is to set environment variable `OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60` and use the --restart=always flag when starting the container. This way OpenVPN will exit if ping fails over a period of time which will stop the container and then the Docker deamon will restart it.
 
+#### Reach sleep or hybernation on your host if no torrents are active
+By befault Transmission will always [scrape](https://en.wikipedia.org/wiki/Tracker_scrape) trackers, even if all torrents have completed their activities, or they have been paused manually. This will cause Transmission to be always active, therefore never allow your host server to be inactive and go to sleep/hybernation/whatever. If this is something you want, you can add the following variable when creating the container. It will turn off a hidden setting in Tranmsission which will stop the application to scrape trackers for paused torrents. Transmission will become inactive, and your host will reach the desidered state.
+```
+-e "TRANSMISSION_SCRAPE_PAUSED_TORRENTS_ENABLED=false"
+```
 #### Running it on a NAS
 Several popular NAS platforms supports Docker containers. You should be able to set up and configure this container using their web interfaces. Remember that you need a TUN/TAP device to run the container. To set up the device it's probably simplest to install a OpenVPN package for the NAS. This should set up the device. If not, there are some more detailed instructions below.
 
 #### Questions?
 If you are having issues with this container please submit an issue on GitHub.
 Please provide logs, docker version and other information that can simplify reproducing the issue.
-Using the latest stable verison of Docker is always recommended. Support for older version is on a best-effort basis.
+Using the latest stable version of Docker is always recommended. Support for older version is on a best-effort basis.
 
 ## Adding new providers
 If your VPN provider is not in the list of supported providers you could always create an issue on GitHub and see if someone could add it for you. But if you're feeling up for doing it yourself, here's a couple of pointers.
 
 You clone this repository and create a new folder under "openvpn" where you put the .ovpn files your provider gives you. Depending on the structure of these files you need to make some adjustments. For example if they come with a ca.crt file that is referenced in the config you need to update this reference to the path it will have inside the container (which is /etc/openvpn/...). You also have to set where to look for your username/password.
 
-There is a script called adjustConfigs.sh that could help you. After putting your .ovpn files in a folder, run that script with your folder name as parameter and it will try to do the changes descibed above. If you use it or not, reading it might give you some help in what you're looking to change in the .ovpn files.
+There is a script called adjustConfigs.sh that could help you. After putting your .ovpn files in a folder, run that script with your folder name as parameter and it will try to do the changes described above. If you use it or not, reading it might give you some help in what you're looking to change in the .ovpn files.
 
 Once you've finished modifying configs, you build the container and run it with OPENVPN_PROVIDER set to the name of the folder of configs you just created (it will be lowercased to match the folder names). And that should be it!
 
@@ -327,10 +356,12 @@ For example, another container may pause or restrict transmission speeds while t
 
 ## Running on ARM (Raspberry PI)
 Since the Raspberry PI runs on an ARM architecture instead of x64, the existing x64 images will not
-work properly. To support users that wish to run this container on a Raspberry Pi, there are 2 additional
-Dockerfiles created. The Dockerfiles supported by the Raspberry PI are Dockerfile.armhf -- there is
+work properly. There are 2 additional Dockerfiles created. The Dockerfiles supported by the Raspberry PI are Dockerfile.armhf -- there is
 also an example docker-compose-armhf file that shows how you might use Transmission/OpenVPN and the
 corresponding nginx reverse proxy on an RPI machine.
+You can use the `latest-armhf` tag for each images (see docker-compose-armhf.yml) or build your own images using Dockerfile.armhf.
+
+
 
 ## Make it work on Synology NAS
 Here are the steps to run it on a Synology NAS (Tested on DSM 6) :
@@ -350,6 +381,7 @@ if ( [ ! -c /dev/net/tun ] ); then
 		mkdir -m 755 /dev/net
 	fi
 	mknod /dev/net/tun c 10 200
+	chmod 0755 /dev/net/tun
 fi
 
 # Load the tun module if not already loaded
@@ -369,8 +401,8 @@ nameserver 8.8.8.8
 nameserver 8.8.4.4
 ```
 - Save the file with [escape] + `:wq!`
-- Create your docker container with a the following command line: 
- 
+- Create your docker container with a the following command line:
+
       # Tested on DSM 6.1.4-15217 Update 1, Docker Package 17.05.0-0349
       docker run \
           --cap-add=NET_ADMIN \
@@ -379,7 +411,7 @@ nameserver 8.8.4.4
           -v /volume1/foldername/resolv.conf:/etc/resolv.conf \
           -v /volume1/yourpath/:/data \
           -e "OPENVPN_PROVIDER=PIA" \
-          -e "OPENVPN_CONFIG=Netherlands" \
+          -e "OPENVPN_CONFIG=CA\ Toronto" \
           -e "OPENVPN_USERNAME=XXXXX" \
           -e "OPENVPN_PASSWORD=XXXXX" \
           -e "LOCAL_NETWORK=192.168.0.0/24" \
@@ -424,7 +456,7 @@ ExecStart=/usr/bin/docker run \
         -e "OPENVPN_PROVIDER=TORGUARD" \
         -e "OPENVPN_USERNAME=bittorrent@example.com" \
         -e "OPENVPN_PASSWORD=hunter2" \
-        -e "OPENVPN_CONFIG=Netherlands" \
+        -e "OPENVPN_CONFIG=CA\ Toronto" \
         -e "OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60" \
         -e "TRANSMISSION_UMASK=0" \
         -p 9091:9091 \

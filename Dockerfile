@@ -7,18 +7,22 @@ VOLUME /config
 # Update packages and install software
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install software-properties-common wget git default-jre libmediainfo-dev locales \
+    && apt-get -y install software-properties-common wget git curl jq default-jre libmediainfo-dev locales \
     && add-apt-repository ppa:transmissionbt/ppa \
     && wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add - \
     && echo "deb http://build.openvpn.net/debian/openvpn/stable xenial main" > /etc/apt/sources.list.d/openvpn-aptrepo.list \
     && apt-get update \
-    && apt-get install -y sudo transmission-cli transmission-common transmission-daemon curl rar unrar zip unzip ufw iputils-ping openvpn \
+    && apt-get install -y sudo transmission-cli transmission-common transmission-daemon curl rar unrar zip unzip ufw iputils-ping openvpn bc\
     python2.7 python2.7-pysqlite2 && ln -sf /usr/bin/python2.7 /usr/bin/python2 \
     && wget https://github.com/Secretmapper/combustion/archive/release.zip \
     && unzip release.zip -d /opt/transmission-ui/ \
     && rm release.zip \
     && wget https://github.com/ronggang/twc-release/raw/master/src.tar.gz \
     && mkdir /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/style /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/images /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/javascript /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/index.html /opt/transmission-ui/transmission-web-control/index.original.html \
     && tar -xvf src.tar.gz -C /opt/transmission-ui/transmission-web-control/ \
     && rm src.tar.gz \
     && git clone git://github.com/endor/kettu.git /opt/transmission-ui/kettu \
@@ -47,6 +51,7 @@ ADD tinyproxy /opt/tinyproxy/
 ENV OPENVPN_USERNAME=**None** \
     OPENVPN_PASSWORD=**None** \
     OPENVPN_PROVIDER=**None** \
+    GLOBAL_APPLY_PERMISSIONS=true \
     TRANSMISSION_ALT_SPEED_DOWN=50 \
     TRANSMISSION_ALT_SPEED_ENABLED=false \
     TRANSMISSION_ALT_SPEED_TIME_BEGIN=540 \
@@ -121,9 +126,11 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_WATCH_DIR=/data/torrents/watch \
     TRANSMISSION_WATCH_DIR_ENABLED=true \
     TRANSMISSION_HOME=/data/torrents/transmission-home \
+    TRANSMISSION_WATCH_DIR_FORCE_GENERIC=false \
     ENABLE_UFW=false \
     UFW_ALLOW_GW_NET=false \
     UFW_EXTRA_PORTS= \
+    UFW_DISABLE_IPTABLES_REJECT=false \
     TRANSMISSION_WEB_UI= \
     PUID= \
     PGID= \

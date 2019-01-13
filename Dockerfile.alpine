@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.8
 # MAINTAINER Kristian Haugene
 
 VOLUME /data
@@ -6,7 +6,7 @@ VOLUME /config
 
 ENV DOCKERIZE_VERSION=v0.6.0
 RUN echo "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
-    && apk --no-cache add bash dumb-init ip6tables ufw@testing openvpn shadow transmission-daemon \
+    && apk --no-cache add bash dumb-init ip6tables ufw@testing openvpn shadow transmission-daemon transmission-cli curl jq \
     && echo "Install dockerize $DOCKERIZE_VERSION" \
     && wget -qO- https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xz -C /usr/bin \
     && mkdir -p /opt/transmission-ui \
@@ -18,6 +18,10 @@ RUN echo "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/ap
     && echo "Install Transmission-Web-Control" \
     && mkdir /opt/transmission-ui/transmission-web-control \
     && wget -qO- https://github.com/ronggang/twc-release/raw/master/src.tar.gz | tar xz -C /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/style /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/images /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/javascript /opt/transmission-ui/transmission-web-control \
+    && ln -s /usr/share/transmission/web/index.html /opt/transmission-ui/transmission-web-control/index.original.html \
     && rm -rf /tmp/* /var/tmp/* \
     && groupmod -g 1000 users \
     && useradd -u 911 -U -d /config -s /bin/false abc \
@@ -29,6 +33,7 @@ ADD transmission/ /etc/transmission/
 ENV OPENVPN_USERNAME=**None** \
     OPENVPN_PASSWORD=**None** \
     OPENVPN_PROVIDER=**None** \
+    GLOBAL_APPLY_PERMISSIONS=true \
     TRANSMISSION_ALT_SPEED_DOWN=50 \
     TRANSMISSION_ALT_SPEED_ENABLED=false \
     TRANSMISSION_ALT_SPEED_TIME_BEGIN=540 \
@@ -103,9 +108,11 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_WATCH_DIR=/data/watch \
     TRANSMISSION_WATCH_DIR_ENABLED=true \
     TRANSMISSION_HOME=/data/transmission-home \
+    TRANSMISSION_WATCH_DIR_FORCE_GENERIC=false \
     ENABLE_UFW=false \
     UFW_ALLOW_GW_NET=false \
     UFW_EXTRA_PORTS= \
+    UFW_DISABLE_IPTABLES_REJECT=false \
     TRANSMISSION_WEB_UI= \
     PUID= \
     PGID= \
