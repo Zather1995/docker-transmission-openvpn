@@ -35,7 +35,7 @@ RUN apt-get update \
     && groupmod -g 1000 users \
     && useradd -u 911 -U -d /config -s /bin/false abc \
     && usermod -G users abc \
-    && wget http://sourceforge.mirrorservice.org/f/project/fi/filebot/filebot/FileBot_4.7.9/filebot_4.7.9_amd64.deb \
+    && wget http://download2.nust.na/pub4/sourceforge/f/fi/filebot/filebot/FileBot_4.7.9/filebot_4.7.9_amd64.deb \
     && dpkg -i filebot_4.7.9_amd64.deb \
     && rm filebot_4.7.9_amd64.deb
 
@@ -109,7 +109,7 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_RPC_WHITELIST_ENABLED=false \
     TRANSMISSION_SCRAPE_PAUSED_TORRENTS_ENABLED=true \
     TRANSMISSION_SCRIPT_TORRENT_DONE_ENABLED=true \
-    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME=/data/torrents/transmission-home/complete.sh \
+    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME=/config/transmission-home/complete.sh \
     TRANSMISSION_SEED_QUEUE_ENABLED=false \
     TRANSMISSION_SEED_QUEUE_SIZE=10 \
     TRANSMISSION_SPEED_LIMIT_DOWN=100 \
@@ -125,7 +125,7 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_UTP_ENABLED=true \
     TRANSMISSION_WATCH_DIR=/data/torrents/watch \
     TRANSMISSION_WATCH_DIR_ENABLED=true \
-    TRANSMISSION_HOME=/data/torrents/transmission-home \
+    TRANSMISSION_HOME=/config/transmission-home \
     TRANSMISSION_WATCH_DIR_FORCE_GENERIC=false \
     ENABLE_UFW=false \
     UFW_ALLOW_GW_NET=false \
