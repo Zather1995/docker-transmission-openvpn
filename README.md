@@ -49,9 +49,10 @@ The container is available from the Docker registry and this is the simplest way
 To run the container use this command:
 
 ```
-$ docker run --cap-add=NET_ADMIN --device=/dev/net/tun -d \
+$ docker run --cap-add=NET_ADMIN -d \
               -v /your/storage/path/:/data \
               -v /etc/localtime:/etc/localtime:ro \
+              -e CREATE_TUN_DEVICE=true \
               -e OPENVPN_PROVIDER=PIA \
               -e OPENVPN_CONFIG=CA\ Toronto \
               -e OPENVPN_USERNAME=user \
@@ -78,9 +79,9 @@ If you provide a list, a file will be randomly chosen in the list, this is usefu
 ```
 -e "OPENVPN_CONFIG=ipvanish-AT-Vienna-vie-c02,ipvanish-FR-Paris-par-a01,ipvanish-DE-Frankfurt-fra-a01"
 ```
-If you provide a list and the selected server goes down, after the value of ping-timeout the container will be restarted and a server will be randomly chosen, note that the faulty server can be chosen again, if this should occur, the container will be restarted again until a working server is selected.  
+If you provide a list and the selected server goes down, after the value of ping-timeout the container will be restarted and a server will be randomly chosen, note that the faulty server can be chosen again, if this should occur, the container will be restarted again until a working server is selected.
 
-To make sure this work in all cases, you should add ```--pull-filter ignore ping``` to your OPENVPN_OPTS variable.  
+To make sure this work in all cases, you should add ```--pull-filter ignore ping``` to your OPENVPN_OPTS variable.
 
 As you can see, the container also expects a data volume to be mounted.
 This is where Transmission will store your downloads, incomplete downloads and look for a watch directory for new .torrent files.
@@ -101,6 +102,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | FreeVPN | `FREEVPN` |
 | FrootVPN | `FROOT` |
 | FrostVPN | `FROSTVPN` |
+| GhostPath | `GHOSTPATH` |
 | Giganews | `GIGANEWS` |
 | HideMe | `HIDEME` |
 | HideMyAss | `HIDEMYASS` |
@@ -117,6 +119,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | Perfect Privacy | `PERFECTPRIVACY` |
 | Private Internet Access | `PIA` |
 | PrivateVPN | `PRIVATEVPN` |
+| ProtonVPN | `PROTONVPN` |
 | proXPN | `PROXPN` |
 | proxy.sh | `PROXYSH ` |
 | PureVPN | `PUREVPN` |
@@ -125,6 +128,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 | SlickVPN | `SLICKVPN` |
 | Smart DNS Proxy | `SMARTDNSPROXY` |
 | SmartVPN | `SMARTVPN` |
+| Surfshark | `SURFSHARK` |
 | TigerVPN | `TIGER` |
 | TorGuard | `TORGUARD` |
 | Trust.Zone | `TRUSTZONE` |
@@ -152,6 +156,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 |`OPENVPN_CONFIG` | Sets the OpenVPN endpoint to connect to. | `OPENVPN_CONFIG=UK Southampton`|
 |`OPENVPN_OPTS` | Will be passed to OpenVPN on startup | See [OpenVPN doc](https://openvpn.net/index.php/open-source/documentation/manuals/65-openvpn-20x-manpage.html) |
 |`LOCAL_NETWORK` | Sets the local network that should have access. Accepts comma separated list. | `LOCAL_NETWORK=192.168.0.0/24`|
+|`CREATE_TUN_DEVICE` | Creates /dev/net/tun device inside the container, mitigates the need mount the device from the host | `CREATE_TUN_DEVICE=true`|
 
 ### Firewall configuration options
 When enabled, the firewall blocks everything except traffic to the peer port and traffic to the rpc port from the LOCAL_NETWORK and the internal docker gateway.
@@ -164,6 +169,14 @@ If TRANSMISSION_PEER_PORT_RANDOM_ON_START is enabled then it allows traffic to t
 |`UFW_ALLOW_GW_NET` | Allows the gateway network through the firewall. Off defaults to only allowing the gateway. | `UFW_ALLOW_GW_NET=true`|
 |`UFW_EXTRA_PORTS` | Allows the comma separated list of ports through the firewall. Respects UFW_ALLOW_GW_NET. | `UFW_EXTRA_PORTS=9910,23561,443`|
 |`UFW_DISABLE_IPTABLES_REJECT` | Prevents the use of `REJECT` in the `iptables` rules, for hosts without the `ipt_REJECT` module (such as the Synology NAS). | `UFW_DISABLE_IPTABLES_REJECT=true`|
+
+### Health check option
+
+Because your VPN connection can sometimes fail, Docker will run a health check on this container every 5 minutes to see if the container is still connected to the internet. By default, this check is done by pinging google.com once. You change the host that is pinged.
+
+| Variable | Function | Example |
+|----------|----------|-------|
+| `HEALTH_CHECK_HOST` | this host is pinged to check if the network connection still works | `google.com` |
 
 ### Permission configuration options
 By default the startup script applies a default set of permissions and ownership on the transmission download, watch and incomplete directories. The GLOBAL_APPLY_PERMISSIONS directive can be used to disable this functionality.
@@ -228,7 +241,7 @@ You may set the following parameters to customize the user id that runs transmis
 
 ### Dropping default route from iptables (advanced)
 
-Some VPNs do not override the default route, but rather set other routes with a lower metric.  
+Some VPNs do not override the default route, but rather set other routes with a lower metric.
 This might lead to the default route (your untunneled connection) to be used.
 
 To drop the default route set the environment variable `DROP_DEFAULT_ROUTE` to `true`.
@@ -245,6 +258,7 @@ Once /scripts is mounted you'll need to write your custom code in the following 
 
 | Script | Function |
 |----------|----------|
+|/scripts/openvpn-pre-start.sh | This shell script will be executed before openvpn start |
 |/scripts/transmission-pre-start.sh | This shell script will be executed before transmission start |
 |/scripts/transmission-post-start.sh | This shell script will be executed after transmission start |
 |/scripts/transmission-pre-stop.sh | This shell script will be executed before transmission stop |
@@ -346,7 +360,15 @@ Add a new volume mount to your `docker run` command that mounts your config file
 
 Then you can set `OPENVPN_PROVIDER=CUSTOM`and the container will use the config you provided. If you are using AirVPN or other provider with credentials in the config file, you still need to set `OPENVPN_USERNAME` and `OPENVPN_PASSWORD` as this is required by the startup script. They will not be read by the .ovpn file, so you can set them to whatever.
 
-Note that you still need to modify your .ovpn file as described in the previous section. If you have an separate ca.crt file your volume mount should be a folder containing both the ca.crt and the .ovpn config.
+Note that you still need to modify your .ovpn file as described in the previous section. If you have an separate ca.crt, client.key or client.crt file in your volume mount should be a folder containing both the ca.crt and the .ovpn config.
+
+Mount the folder contianing all the required files instead of the openvpn.ovpn file.
+`-v /path/to/your/config/:/etc/openvpn/custom/`
+
+Additionally the .ovpn config should include the full path on the docker container to the ca.crt and additional files. 
+`ca /etc/openvpn/custom/ca.crt`
+
+If `-e OPENVPN_CONFIG=` variable has been omitted from the `docker run` command the .ovpn config file must be named default.ovpn. IF `-e OPENVPN_CONFIG=` is used with the custom provider the .ovpn config and variable must match as described above.
 
 ## Controlling Transmission remotely
 The container exposes /config as a volume. This is the directory where the supplied transmission and OpenVPN credentials will be stored.
