@@ -7,11 +7,12 @@ VOLUME /config
 ARG DOCKERIZE_ARCH=amd64
 ARG DOCKERIZE_VERSION=v0.6.1
 ARG DUMBINIT_VERSION=1.2.2
+ARG FILEBOT_VERSION=4.8.5
 
 # Update, upgrade and install core software
 RUN apt update \
     && apt -y upgrade \
-    && apt -y install software-properties-common wget git curl jq default-jre libmediainfo-dev locales \
+    && apt -y install software-properties-common wget git curl jq \
     && add-apt-repository ppa:transmissionbt/ppa \
     && wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add - \
     && echo "deb http://build.openvpn.net/debian/openvpn/stable xenial main" > /etc/apt/sources.list.d/openvpn-aptrepo.list \
@@ -37,9 +38,12 @@ RUN apt update \
     && groupmod -g 1000 users \
     && useradd -u 911 -U -d /config -s /bin/false abc \
     && usermod -G users abc \
-    && wget http://download2.nust.na/pub4/sourceforge/f/fi/filebot/filebot/FileBot_4.7.9/filebot_4.7.9_amd64.deb \
-    && dpkg -i filebot_4.7.9_amd64.deb \
-    && rm filebot_4.7.9_amd64.deb
+    && add-apt-repository ppa:openjdk-r/ppa \
+    && apt update \
+    && apt -y install openjdk-11-jre libmediainfo-dev locales openjfx\
+    && wget https://get.filebot.net/filebot/FileBot_${FILEBOT_VERSION}/FileBot_${FILEBOT_VERSION}_amd64.deb \
+    && dpkg -i FileBot_${FILEBOT_VERSION}_amd64.deb \
+    && rm FileBot_${FILEBOT_VERSION}_amd64.deb
 
 RUN locale-gen en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
@@ -68,7 +72,7 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_BLOCKLIST_URL=http://www.example.com/blocklist \
     TRANSMISSION_CACHE_SIZE_MB=4 \
     TRANSMISSION_DHT_ENABLED=true \
-    TRANSMISSION_DOWNLOAD_DIR=/data/torrents/completed \
+    TRANSMISSION_DOWNLOAD_DIR=/data/torrents/complete \
     TRANSMISSION_DOWNLOAD_LIMIT=100 \
     TRANSMISSION_DOWNLOAD_LIMIT_ENABLED=0 \
     TRANSMISSION_DOWNLOAD_QUEUE_ENABLED=true \
@@ -112,7 +116,7 @@ ENV OPENVPN_USERNAME=**None** \
     TRANSMISSION_RPC_WHITELIST_ENABLED=false \
     TRANSMISSION_SCRAPE_PAUSED_TORRENTS_ENABLED=true \
     TRANSMISSION_SCRIPT_TORRENT_DONE_ENABLED=true \
-    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME=/config/transmission-home/complete.sh \
+    TRANSMISSION_SCRIPT_TORRENT_DONE_FILENAME=/etc/transmission/complete.sh \
     TRANSMISSION_SEED_QUEUE_ENABLED=false \
     TRANSMISSION_SEED_QUEUE_SIZE=10 \
     TRANSMISSION_SPEED_LIMIT_DOWN=100 \
